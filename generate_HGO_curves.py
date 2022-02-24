@@ -1,5 +1,8 @@
-import pandas as pd
-
+import ray
+ray.init(num_cpus=16) #max cpus. important to avoid overthreading 
+#add "export MODIN_OUT_OF_CORE=true" to the .bashrc file a open a new terminal
+import modin.pandas as pd
+import os
 import sympy as sym
 from sympy.physics.quantum import TensorProduct
 
@@ -7,6 +10,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 pd.set_option('display.max_rows', None)
+os.environ["MODIN_ENGINE"] = "ray"
+
 
 
 def double_dot(A,B):
@@ -139,23 +144,23 @@ def get_curve(params, stretch_min, stretch_max, ninc, load):
 
 c_min = 1.0
 c_max = 40.0
-n_c = 3
+n_c = 6
 
 κ_min = 0.0
 κ_max = 1/3
-n_κ = 3
+n_κ = 6
 
 k1_min = 0.1
 k1_max = 5.0
-n_k1 = 3
+n_k1 = 6
 
 k2_min = 0.1
 k2_max = 5.0
-n_k2 = 3
+n_k2 = 6
 
 θ_min = 0 # in degrees
 θ_max = 90 # in degrees
-n_θ = 3
+n_θ = 6
 
 decimals=2   #number of decimal cases for each parameter value
 
