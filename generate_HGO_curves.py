@@ -1,8 +1,9 @@
-import ray
-ray.init(num_cpus=16) #max cpus. important to avoid overthreading 
-#add "export MODIN_OUT_OF_CORE=true" to the .bashrc file a open a new terminal
-import modin.pandas as pd
 import os
+os.environ["MODIN_CPUS"] = "16"#max cpus. important to avoid overthreading 
+os.environ["MODIN_OUT_OF_CORE"] = "true" #use disk when ram is full
+import modin.pandas as pd
+
+
 import sympy as sym
 from sympy.physics.quantum import TensorProduct
 
@@ -10,8 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 pd.set_option('display.max_rows', None)
-os.environ["MODIN_ENGINE"] = "ray"
-
+#os.environ["MODIN_ENGINE"] = "ray"
 
 
 def double_dot(A,B):
