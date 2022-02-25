@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 pd.set_option('display.max_rows', None)
 
 
+
 def plot_the_loss_curve(epochs, mse_training, mse_validation):
     plt.figure()
     plt.xlabel("Epoch")
@@ -36,8 +37,8 @@ def plot_the_loss_curve(epochs, mse_training, mse_validation):
     plt.show()
 
 
-X = np.load('X_run.npy')
-y = np.load('y_run.npy')
+X = np.load('X_run_7.npy')
+y = np.load('y_run_7.npy')
 
 # let's save 10% of the data for testing. these curves won't be part of the model training
 test_split = 0.1
@@ -53,9 +54,11 @@ print('Test set: ', y_test.shape)
 # train_size = train_df.shape[0]
 # test_size = test_df.shape[0]
 
+ninc = y_train.shape[1]
+
 # reshape for keras training
-x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 2))
-x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 2))
+y_train = y_train.reshape((y_train.shape[0], y_train.shape[1], 2))
+y_test = y_test.reshape((y_test.shape[0], y_test.shape[1], 2))
 # shuffle data
 idx = np.random.permutation(len(x_train))
 x_train = x_train[idx]
@@ -63,26 +66,29 @@ y_train = y_train[idx]
 
 # Set the hyperparameters
 VALIDATION_SPLIT = 0.2
-LEARNING_RATE = 0.005
-BATCH_SIZE = 32
-EPOCHS = 40
+LEARNING_RATE = 0.001
+BATCH_SIZE = 64
+EPOCHS = 100
 INPUT_SHAPE = x_train.shape[1:]
+OUTPUT_SHAPE = y_train.shape[1:]
 
-# Define the model's architecture
+
 inputs = keras.Input(shape=INPUT_SHAPE)
 
-dense = layers.Dense(16, activation="relu")
+dense = layers.Dense(16 * ninc, activation="relu")
 x = dense(inputs)
+
+dense = layers.Dense(32 * ninc, activation="relu")
+x = dense(x)
+
+x = tf.keras.layers.Reshape((ninc, -1))(x)
+
+x = layers.Dense(16, activation="relu")(x)
 
 dropout = tf.keras.layers.Dropout(0.2)
 x = dropout(x)
 
-x = tf.keras.layers.Flatten()(x)
-
-x = layers.Dense(16, activation="relu")(x)
-
-outputs = layers.Dense(5)(x)
-
+outputs = layers.Dense(2)(x)
 
 model = keras.Model(inputs=inputs, outputs=outputs, name="model")
 
@@ -94,11 +100,9 @@ model.compile(
 
 model.summary()
 
-
 callbacks = [keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)]
 
-
-history = model.fit(
+history=model.fit(
     x_train,
     y_train,
     validation_split=VALIDATION_SPLIT,
@@ -118,7 +122,34 @@ hist = history.history
 plot_the_loss_curve(epochs, hist["loss"],
                     hist["val_loss"])
 
-print('\n')
-print("Prediction for curve 0: ", model.predict(x_test[0:1]))
 
-print("Real parameters of curve 0: ", y_test[0:1])
+x_predict = np.zeros(ninc)
+y_predict = np.zeros(ninc)
+
+c = 0
+for i in model.predict(x_test[0:1])[0]:
+    x_predict[c] = i[0]
+    y_predict[c] = i[1]
+    c = c + 1
+
+plt.plot(x_predict, y_predict)
+plt.show()
+
+
+x_true = np.zeros(ninc)
+y_true = np.zeros(ninc)
+
+c = 0
+for i in y_test[0:1][0]:
+    x_true[c] = i[0]
+    y_true[c] = i[1]
+    c = c+1
+
+plt.plot(x_true,y_true)
+plt.show()
+
+c = 0
+for i in model.predict(x_test[1:2])[0]:
+    x_predict[c] = i[0]
+    y_predict[c] = i[1]
+    c = c + 1
