@@ -1,4 +1,8 @@
-import pandas as pd
+import os
+os.environ["MODIN_CPUS"] = "16"#max cpus. important to avoid overthreading 
+os.environ["MODIN_OUT_OF_CORE"] = "true" #use disk when ram is full
+import modin.pandas as pd
+
 
 import sympy as sym
 from sympy.physics.quantum import TensorProduct
@@ -7,6 +11,7 @@ import numpy as np
 from datetime import datetime
 
 pd.set_option('display.max_rows', None)
+#os.environ["MODIN_ENGINE"] = "ray"
 
 
 def double_dot(A, B):
